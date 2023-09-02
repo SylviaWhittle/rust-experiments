@@ -24,15 +24,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tau = 2.0 * consts::PI * r / q;
 
     // End time
-    let end_time = 1000000;
+    let end_time = 80000000;
 
     // Create arrays
     let mut x: Vec<f64> = vec![0.0; end_time];
     let mut p: Vec<f64> = vec![0.0; end_time];
 
-    for i in (1100..1200).step_by(3) {
-        let k: f64 = -i as f64 / 1000.0 as f64;
-
+    for j in (1100..1101).step_by(3) {
+        let k: f64 = -(j as f64 / 1000.0 as f64);
         println!("k: {k}");
 
         // Set initial points
@@ -40,15 +39,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         p[0] = p0;
 
         // Create a poincare section of position and momentum using a derived direct kick-to-kick mapping
+        println!("cos tau: {}", tau.cos());
+        let cos_tau = tau.cos();
+        println!("sin tau: {}", tau.sin());
+        let sin_tau = tau.sin();
+        let sqrt_2 = 2.0_f64.sqrt();
+        println!("sqrt 2: {}", sqrt_2);
+
         for i in 1..end_time {
-            x[i] = x[i - 1] * tau.cos()
-                + (p[i - 1] + k * (2.0_f64.sqrt() * x[i - 1]).sin() * tau.sin());
-            p[i] = (p[i - 1] + k * (2.0_f64.sin() * x[i - 1])) * tau.cos() - x[i - 1] * tau.sin();
+            // println!("i: {i}");
+            let x_prev = x[i - 1];
+            // println!("x prev: {}", x_prev);
+            let p_prev = p[i - 1];
+            // println!("p prev: {}", p_prev);
+
+            x[i] = x_prev * cos_tau + (p_prev + k * (sqrt_2 * x_prev).sin()) * sin_tau;
+            p[i] = (p_prev + k * (sqrt_2 * x_prev).sin()) * cos_tau - x_prev * sin_tau;
         }
 
         println!("Finished simulation");
         // println!("x:");
         // println!("{:?}", x);
+        // println!("p:");
         // println!("{:?}", p);
 
         println!("Saving results");
@@ -65,9 +77,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             fs::create_dir(data_directory)?;
         }
         fs::write(
-            data_directory.join(Path::new(&format!("data_k-{}.bin", i))),
+            data_directory.join(Path::new(&format!("data_k-{}.bin", j))),
             &buffer,
         )?;
+
+        // println!("x: {:?}", x);
+        // println!("p: {:?}", p);
     }
 
     Ok(())

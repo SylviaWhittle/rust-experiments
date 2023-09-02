@@ -21,12 +21,14 @@ for file in files:
 
     data = np.fromfile(file, dtype='<f8')
     n = len(data) // 2
-    sampling_step_size = 100
+    sampling_step_size = 10
     x = data[:n:sampling_step_size]
     p = data[n::sampling_step_size]
     print(f"len x : {len(x)}")
     print(f"len p : {len(p)}")
-    plt.scatter(x, p, marker='.')
+    plt.scatter(x, p, marker='.', s=0.1, edgecolors="none")
     # plt.title(f"k = {-k/100}")
-    plt.savefig(fname=f"./plots/plot_{k}.png")
+    plt.xlim((-100.0, 100.0))
+    plt.ylim((-100.0, 100.0))
+    plt.savefig(fname=f"./plots/plot_{k}.png", dpi=1000)
     plt.close()

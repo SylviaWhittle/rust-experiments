@@ -1,6 +1,5 @@
 target/
 stochastic-web/data/*
-
 stochastic-web/plot.png
-
+stochastic-web/plots/*
 stochastic-web/output.png

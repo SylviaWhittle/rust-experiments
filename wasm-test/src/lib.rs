@@ -1,4 +1,6 @@
 use rand::Rng;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
@@ -13,7 +15,22 @@ pub fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<CanvasRenderingContext2d>()?;
 
-    draw_random_points(&context);
+    let context = Rc::new(RefCell::new(context));
+
+    // Call this every second
+    let closure = {
+        let context = Rc::clone(&context);
+        Closure::wrap(Box::new(move || {
+            draw_random_points(&*context.borrow());
+        }) as Box<dyn FnMut()>)
+    };
+
+    web_sys::window()
+        .unwrap()
+        .set_interval_with_callback_and_timeout_and_arguments_0(closure.as_ref().unchecked_ref(), 1)
+        .unwrap();
+
+    closure.forget();
 
     Ok(())
 }
